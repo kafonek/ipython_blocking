@@ -1,3 +1,9 @@
+"""
+ipython_blocking offers a context manager and IPython magic to capture cell execution.
+That is useful when you want a "blocking widget" or other situations where cell execution
+is paused until some trigger is met (like widget form validation)
+"""
+
 import sys
 import time
 import types
@@ -8,6 +14,8 @@ from IPython.core.magic import (
     magics_class,
     line_magic,
 )
+
+__version__ = '0.1.0'
 
 ### General context manager usage:
 

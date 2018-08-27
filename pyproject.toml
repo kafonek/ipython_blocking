@@ -1,0 +1,17 @@
+[build-system]
+requires = ["flit", "IPython"]
+build-backend = "flit.buildapi"
+
+[tool.flit.metadata]
+module = "ipython_blocking"
+author = "Matt Kafonek"
+author-email = "kafonek@gmail.com"
+home-page = "https://github.com/kafonek/ipython_blocking"
+description-file = 'README.md'
+license = 'BSD'
+classifiers = ['Framework :: IPython',
+               'Programming Language :: Python',
+               'Intended Audience :: Developers',
+               'Development Status :: 3 - Alpha',
+               ]
+
