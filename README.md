@@ -3,7 +3,7 @@ A Python library that offers a context manager and IPython magic to capture `exe
 
 
 # What problem is this solving
-In our corporate work environment, we have several thousand Jupyter notebook users.  A small fraction are notebook authors, while the majority of users are running notebooks that other people have written.  That majority of users fall along a spectrum of code-comfort: some users want the notebook experience to be like a regular web application where they don't even see the code, while others are experienced enough to read the code and edit it to fit their individual needs.  
+In our corporate work environment, we have several thousand Jupyter notebook users.  A small fraction are notebook authors, while the majority of users are running notebooks that other people have written.  Non-authors fall along a spectrum of "code comfort": some users want the notebook experience to be like a regular web application where they don't even see the code, while others are experienced enough to read the code and edit it to fit their individual needs.  
 
 [ipywidgets](https://ipywidgets.readthedocs.io/en/stable/) are a very popular and easy way to make rich user interfaces that are engaging for even non-technical users.  It is also common practice to write notebooks designed to work in [dashboard mode](https://github.com/jupyter/dashboards) or which users will interact with by clicking "cell -> run all" right from the start.
 
