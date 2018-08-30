@@ -7,6 +7,7 @@ is paused until some trigger is met (like widget form validation)
 import sys
 import time
 import types
+import ipywidgets as widgets
 
 from IPython.core import magic_arguments
 from IPython.core.magic import (
@@ -15,7 +16,7 @@ from IPython.core.magic import (
     line_magic,
 )
 
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 
 ### General context manager usage:
 
@@ -65,7 +66,10 @@ class CaptureExecution:
         self.start_capturing()
         self.shell.execution_count += 1 # increment execution count to avoid collision error
         
-    def __exit__(self, *args):
+    def __exit__(self, exc_type, exc_value, traceback):
+        if exc_type is not None:
+            # let the error propogate up, such as a keyboard interrupt while capturing cell execution
+            return False
         self.stop_capturing()
         self.replay_captured_events()
 
@@ -74,6 +78,8 @@ class CaptureExecution:
 class CaptureMagic(Magics):
     
     def capture(self, breaking_func, timeout=None):
+        if timeout:
+            timeout = int(timeout)
         start = time.time()
         ctx = CaptureExecution()
         with ctx:
@@ -81,7 +87,7 @@ class CaptureMagic(Magics):
                 if breaking_func():
                     break
                 if timeout:
-                    if (time.time() - start) <= timeout:
+                    if (time.time() - start) >= timeout:
                         break
                 ctx.step()
     
@@ -94,14 +100,23 @@ class CaptureMagic(Magics):
         args = magic_arguments.parse_argstring(self.block, line)
         
         obj = get_ipython().user_ns[args.break_value]
-        ### Support one of two inputs for break_value
+        ### Support the following options for a break value:
         ### 1) a callable function that will break when the function returns True
-        ### 2) a single Widget, which will cause the context to break when the value changes
+        ### 2) a ValueWidget, which will break when the value changes
+        ### 3) a ButtonWidget, which will break when it is clicked
         if isinstance(obj, (types.FunctionType, types.MethodType)):
             func = obj
-        else:
+        elif isinstance(obj, widgets.ValueWidget):
             starting_value = obj.value
             func = lambda: obj.value != starting_value
+        elif isinstance(obj, widgets.Button):
+            obj._has_been_clicked = False
+            def handler(w):
+                w._has_been_clicked = True
+            obj.on_click(handler)
+            func = lambda: obj._has_been_clicked
+        else:
+            raise Exception('The positional argument to %block should be a ValueWidget, Button, or a function/method')
         return self.capture(func, args.timeout)
             
 
