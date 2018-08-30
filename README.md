@@ -14,6 +14,12 @@ Without `ipython_blocking`, our notebook authors faced the choice of leveraging 
 # When to use `ipython_blocking` and when not to
 If your notebook is designed to be run once, execute in a linear fashion, and uses widgets for input, then `ipython_blocking` is perfect for you.  However, it's not a library for all use cases.  For instance, if you have a notebook where you expect users to change values in a widget and then that updates a visualization, using regular `on_click` handlers is better.  
 
+# Install
+`ipython_blocking` is on [PyPI](https://pypi.org/project/ipython_blocking/).
+```
+>>> pip install ipython_blocking
+```
+
 # Examples
 See [the demo notebook](demo_notebook.ipynb) for an interactive example.
 
