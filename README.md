@@ -110,7 +110,7 @@ box
 ### Cell 2
 def complex_validation():
     "return False unless both dropdowns are non-empty strings and don't equal each other"
-    return dd1.value and dd1.value and dd1.value != dd2.value
+    return dd1.value and dd2.value and dd1.value != dd2.value
 
 ### Cell 3
 %block complex_validation
