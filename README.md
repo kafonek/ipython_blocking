@@ -3,15 +3,35 @@ A Python library that offers a context manager and IPython magic to capture `exe
 
 
 # What problem is this solving
-In our corporate work environment, we have several thousand Jupyter notebook users.  A small fraction are notebook authors, while the majority of users are running notebooks that other people have written.  Non-authors fall along a spectrum of "code comfort": some users want the notebook experience to be like a regular web application where they don't even see the code, while others are experienced enough to read the code and edit it to fit their individual needs.  
+[ipywidgets](https://ipywidgets.readthedocs.io/en/stable/) is an awesome library that let's authors create rich interactive user interfaces inside Jupyter notebooks.  One way we use widgets is for user input such as asking for a query string with `widgets.Text` or expecting them to choose an option from a `widgets.Dropdown`.  In that sense, widgets are an alternative to the built in `input` command or asking the users to edit code in an input cell.  Widgets are particularly compelling to use when engaging non-technical users.
 
-[ipywidgets](https://ipywidgets.readthedocs.io/en/stable/) are a very popular and easy way to make rich user interfaces that are engaging for even non-technical users.  It is also common practice to write notebooks designed to work in [dashboard mode](https://github.com/jupyter/dashboards) or which users will interact with by clicking "cell -> run all" right from the start.
+The problem is that if notebook authors use widgets to pull in user input, then they must structure the rest of their logic/workflow as call-back functions.  Wrapping code in a function that is triggered by an `on_click` handler or similar isn't inherently bad, but there are problems that show up over and over in my experience: notebooks become harder to read, harder to debug, harder to maintain, and harder to build on.
 
-The problem is that notebook authors must structure the rest of their code as call-back functions if they want to reference data entered into a widget, such as a query string in a `widgets.Text` box or an option picked from a `widget.Dropdown`.  Wrapping code in a function that is triggered by an `on_click` handler or similar isn't inherently bad, but there are problems that show up over and over.  Generally speaking, using widgets for input data and then using callback functions to do the work in a notebook makes the notebook harder to read, harder to debug, harder to maintain, and harder to build on.
+### Simplistic example
+Consider this toy example.  I want to write a notebook that pulls back some stats on something (NBA player, twitter feed, github profile) and builds a template that I'm going to give to marketing or HR or whatever.  The notebook might look like this - 
+```python
+### Cell 1
+import requests
+import ipywidgets as widgets
+text = widgets.Text(description="Query:")
+button = widgets.Button(description="Run")
 
-Without `ipython_blocking`, our notebook authors faced the choice of leveraging widgets for user-friendly input forms and then having "ugly" callback code afterwards, or writing "cleaner" exploratory-style code that might not have gotten traction with some non-technical users.  With `ipython_blocking`, notebook authors can get the best of both worlds.
+def run(ev):
+    to_query = text.value
+    resp = requests.get('http://some_api/get_info/' + to_query)
+    data = resp.json()
+    # rest of template creation code here
+    
+button.on_submit(run)
+box = widgets.VBox(children=[text, button])
+display(box)
+```
+    
+What happens is that the eventually a user reports that the notebook errored out with a `JSONDecodeError` or `KeyError` because they got queried a term that made the API error out and not return json or return something else unexpected.  Then the author more or less copies out everything from inside the `run` function into a new notebook to run line by line in order to debug what went wrong.
 
-# When to use `ipython_blocking` and when not to
+Yes, there are ways to mitigate the problems in this simplistic example, but I think it's fair to say that one huge benefit of notebooks is their ability to offer an exploratory and interactive experience and that once you end up wrapping your code in call-back functions then you lose much of those benefits.
+
+### When to use `ipython_blocking` and when not to
 If your notebook is designed to be run once, execute in a linear fashion, and uses widgets for input, then `ipython_blocking` is perfect for you.  However, it's not a library for all use cases.  For instance, if you have a notebook where you expect users to change values in a widget and then that updates a visualization, using regular `on_click` handlers is better.  
 
 # Install
@@ -40,7 +60,7 @@ with ctx:
             break
         ctx.step()
         
-### Cell 3 (doesn't run until the dropdown value changes)
+### Cell 3 (doesn't execute until the dropdown value changes)
 print(dd.value)
 ```
 
@@ -64,7 +84,7 @@ dd
 ### Cell 2
 %block dd
         
-### Cell 3 (doesn't run until the dropdown value has changed)
+### Cell 3 (doesn't execute until the dropdown value has changed)
 print(dd.value)
 ```
 
@@ -93,7 +113,7 @@ box
 ### Cell 2
 %block button
 
-### Cell 3 (doesn't run until the button is pressed)
+### Cell 3 (doesn't execute until the button is pressed)
 print(query_input.value)
 ```
 
@@ -115,7 +135,7 @@ def complex_validation():
 ### Cell 3
 %block complex_validation
 
-### Cell 4 (doesn't run until complex_validation returns True)
+### Cell 4 (doesn't execute until complex_validation returns True)
 print(dd1.value, dd2.value)
 ```
 
