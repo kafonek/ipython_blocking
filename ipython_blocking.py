@@ -16,7 +16,7 @@ from IPython.core.magic import (
     line_magic,
 )
 
-__version__ = '0.1.1'
+__version__ = '0.1.1.post1'
 
 ### General context manager usage:
 
