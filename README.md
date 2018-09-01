@@ -1,3 +1,5 @@
+[![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/kafonek/ipython_blocking/master)
+
 # ipython_blocking
 A Python library that offers a context manager and IPython magic to capture `execute_request` messages on the IPython [comms channels](https://jupyter-client.readthedocs.io/en/stable/messaging.html#messages-on-the-shell-router-dealer-channel) and then replay them later.  It is a way to "block" Jupyter notebook cells from running while waiting for a Widget value to change, a Widget button to be pressed, or other validation functions to happen.
 
