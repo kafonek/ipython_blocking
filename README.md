@@ -28,7 +28,7 @@ See [the demo notebook](demo_notebook.ipynb) for an interactive example.
 The most explicit way to use `ipython_blocking` is to use the context manager directly.  In this example, cell #3 (printing the dropdown value) will not actually execute until you have chosen a new value besides the default empty string.
 ```python
 ### Cell 1
-import ipywidgets
+import ipywidgets as widgets
 dd = widgets.Dropdown(options=['', 'foo', 'bar', 'baz'])
 dd
 
@@ -58,7 +58,7 @@ The `%block` cell execution capture context with a `ValueWidget` will stop when 
 import ipython_blocking
 ipython_blocking.load_ipython_extensions()
 
-import ipywidgets
+import ipywidgets as widgets
 dd = widgets.Dropdown(options=['', 'foo', 'bar', 'baz'])
 dd
 
@@ -77,7 +77,7 @@ The `%block` cell execution capture context with a `Button` will stop when the b
 import ipython_blocking
 ipython_blocking.load_ipython_extensions()
 
-import ipywidgets
+import ipywidgets as widgets
 query_input = widgets.Text(description="Query string:")
 button = widgets.Button(description="Submit", disabled=True)
 
@@ -86,6 +86,9 @@ def input_observe(ev):
     if len(value) >= 14:
         button.disabled = False
         button.button_style = 'success'
+    else:
+        button.disabled = True
+        button.button_style = ''
 
 query_input.observe(input_observe, 'value')
 box = widgets.VBox(children=[query_input, button])
@@ -103,6 +106,10 @@ The `%block` cell execution capture context with a function/method will stop whe
 
 ```python
 ### Cell 1
+import ipython_blocking
+ipython_blocking.load_ipython_extensions()
+
+import ipywidgets as widgets
 dd1 = widgets.Dropdown(options=['', 'foo', 'bar', 'baz'])
 dd2 = widgets.Dropdown(options=['', 'foo', 'bar', 'baz'])
 box = widgets.VBox(children=[dd1, dd2])
