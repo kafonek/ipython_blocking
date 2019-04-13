@@ -35,6 +35,7 @@ print(text.value)
 print(dropdown.value)
 ```
 
+*(The dropdown menu doesn't appear in this .gif because its treated as a "separate window" in Windows screen capture, sorry!)*
 ![](example.gif)
 
 #### CaptureExecution
