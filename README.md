@@ -34,9 +34,13 @@ print(text.value)
 print(dropdown.value)
 ```
 
+![](example.gif)
 
 
-### Why not just use callbacks?
+### Alternatives
+
+
+
 Most notebooks that use `ipywidgets` use call-back functions to make sure they're only referencing the values in the Widgets after a user has interacting with that Widget.  For example:
 
 ```python
