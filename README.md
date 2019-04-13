@@ -11,6 +11,7 @@
 pip install ipython_blocking
 ```
 
+
 ### Usage
 Try out the demo notebooks in Binder to see `ipython_blocking` in action.  The most common way to use `ipython_blocking` is with the `%blockrun` magic and running a notebook with "cell -> run all".  `%blockrun button` stops the cell execution messages from the initial "cell -> run all", and attaches a "cell -> run all below" handler to the button so that a notebook can be run in a linear fashion without callback functions after a user has filled out other Widget values.
 
@@ -36,38 +37,82 @@ print(dropdown.value)
 
 ![](example.gif)
 
+#### CaptureExecution
+The way `ipython_blocking` "blocks" cell execution is by creating a context manager that changes the behavior of the `IPython.shell.kernel['execute_request']` handler.  When you execute a cell in a Jupyter notebook, it sends a `execute_request` comms message to the kernel with that code.  
 
-### Alternatives
-
-
-
-Most notebooks that use `ipywidgets` use call-back functions to make sure they're only referencing the values in the Widgets after a user has interacting with that Widget.  For example:
+While the `CaptureExecution` manager is "blocking", it stores those messages in a list instead of actually executing them.  When the context manager exits, it resets the handler to its original behavior and then either replays the stored messages or drops them.
 
 ```python
-import ipywidgets as widgets
-from IPython.display import display
-dropdown = widgets.Dropdown(options=['foo', 'bar', 'baz'])
-button = widgets.Button(description="Print")
-box = widgets.VBox(children=[dropdown, button])
-
-def handler(w):
-    print(dropdown.value)
-button.on_click(handler)
-display(box)
+import ipython_blocking
+ctx = ipython_blocking.CaptureExecution(replay=True)
+with ctx:
+    while True:
+        if break_function():
+            break
+        ctx.step() # handles all other messages that aren't 'execute_request' including widget value changes
 ```
 
-The problem is that all of the application logic must be bundled inside a call back function, which dampens many of the best advantages of working in a Jupyter Notebook environment to begin with.
- 
- * Introspection of the data inside the call-back functions is much harder than in the global scope (and littering your code with `global` is ugly)
- * All other variables in the function are destroyed if an error happens, which can make debug harder (again, unless you litter your code with `global`)
- * There is no sense of small input/visualizing the output throughout the application logic workflow (unless you litter your code with `print` statements)
- * General readability and code comprehension takes a hit
- 
-### Alternatives
-If you structure your code in an asynchronous fashion, you can use [`%gui asyncio`](https://ipywidgets.readthedocs.io/en/latest/examples/Widget%20Asynchronous.html#) to wait for user interaction with a Widget.  
- 
- 
+#### %block
+The `%block` magic is enabled upon importing `ipython_blocking`.  It takes either a function or widget object and creates the `CaptureExecution` manager to block until that function returns True or the widget value changes.
 
+```python
+# cell 1
+import ipywidgets as widgets
+import ipython_blocking
+dd = widgets.Dropdown(options=['', 'foo', 'bar', baz'])
+dd
+
+# cell 2
+%block dd
+
+# cell 3
+# Won't actually be executed until the user chooses an option in the dd widget
+print(dd.value)
+```
+
+#### %blockrun
+The `%blockrun` magic is similar to `%block` but it only accepts an `ipywidgets.Button` target and it attaches a "cell -> run all below" handler to the button.  If you expect the application logic of your Notebook to be run more than once (and/or don't want to reinitialize the Widgets because the user might only change one of many options), then `%blockrun` is the better magic to use.
+
+It is often handy to make the target `Button` unclickable when the Notebook first renders, then add `.observe` handlers on other Widgets that can make the `Button` clickable once some input validation has happened.
+
+```python
+# cell 1
+import ipywidgets as widgets
+import ipython_blocking
+text = widgets.Text()
+dd = widgets.Dropdown(options=['', 'foo', 'bar', 'baz'])
+button = widgets.Button(description='Run', disabled=True)
+
+def validation(ev):
+    "make button clickable if user has put in more than 5 characters and chosen a dropdown option"
+    if len(text.value) > 5 and dd.value:
+        button.disabled = False
+    else:
+        button.disabled = True
+text.observe(validation)
+dd.observe(validation)
+
+box = widgets.VBox(children=[text, dd, button])
+box
+
+# cell 2
+%blockrun button
+
+# cell 3
+print(text.value)
+print(dd.value)
+```
+    
+
+### Alternatives
+The other ways to get the value of a widget after a user has interacted with the widget is to structure your notebook with [event callbacks](https://ipywidgets.readthedocs.io/en/latest/examples/Widget%20Events.html) or to write your code [asynchronously](https://ipywidgets.readthedocs.io/en/latest/examples/Widget%20Asynchronous.html).  
+
+I believe there are major benefits to writing the **application logic** of a Jupyter Notebook in a **linear and synchronous** fashion, with as many variables as possible in the notebook global scope.  Those benefits include:
+ 
+ * Better introspection and comprehension of the workflow (without littering your code with `global` and `print` statements)
+ * More direct debug when something goes wrong
+ * Easier to break code into small blocks/cells
+ 
 
 
 
