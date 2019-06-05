@@ -9,6 +9,7 @@ setup(name='ipython_blocking',
             
       description='Context manager for blocking cell execution within a Jupyter notebook',
       long_description=open('README.md', encoding='utf-8').read(),
+      long_description_content_type = 'text/markdown',
       
       packages=find_packages(),
       install_requires=['IPython', 'ipywidgets'],
