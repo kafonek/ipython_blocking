@@ -1,0 +1,6 @@
+jupyter contrib nbextension install --user
+jupyter nbextension enable toc2/main
+jupyter nbextension enable collapsible_headings/main
+jupyter nbextension enable execute_time/ExecuteTime
+
+pip install pandas ipyleaflet
