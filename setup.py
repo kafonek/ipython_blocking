@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='ipython_blocking',
-      version='0.2.0',
+      version='0.2.1',
       
       author='Matt Kafonek',
       author_email='kafonek@gmail.com',
