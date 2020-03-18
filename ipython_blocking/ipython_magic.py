@@ -82,7 +82,7 @@ class CaptureMagic(Magics):
             obj.on_click(handler) 
 
         if not getattr(obj, '_has_been_clicked'):
-            return self.capture(lambda: obj._has_been_clicked, replay=False)
+            return self.capture(lambda: obj._has_been_clicked, timeout=args.timeout, replay=False)
             
 
 def load_ipython_extensions():
