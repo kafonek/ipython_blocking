@@ -1,5 +1,9 @@
 import sys
 
+import tornado.queues
+
+from nbclient.util import just_run
+
 ### General context manager usage:
 
 # ctx = CaptureExecution()
@@ -18,7 +22,10 @@ class CaptureExecution:
         self.kernel = self.shell.kernel
         
     def step(self):
-        self.kernel.do_one_iteration() 
+        try:
+            just_run(self.kernel.do_one_iteration())
+        except tornado.queues.QueueEmpty:
+            pass
     
     def capture_event(self, stream, ident, parent):
         "A 'capture' function to register instead of the default execute_request handling"
@@ -41,7 +48,7 @@ class CaptureExecution:
             # Using kernel.set_parent is the key to getting the output of the replayed events
             # to show up in the cells that were captured instead of the current cell
             self.kernel.set_parent(ident, parent) 
-            self.kernel.execute_request(stream, ident, parent)
+            just_run(self.kernel.execute_request(stream, ident, parent))
   
     def __enter__(self):
         self.start_capturing()
@@ -55,4 +62,3 @@ class CaptureExecution:
         if self._replay:
             self.replay_captured_events()
 
-            

@@ -61,7 +61,7 @@ The `%block` magic is enabled upon importing `ipython_blocking`.  It takes eithe
 # cell 1
 import ipywidgets as widgets
 import ipython_blocking
-dd = widgets.Dropdown(options=['', 'foo', 'bar', baz'])
+dd = widgets.Dropdown(options=['', 'foo', 'bar', 'baz'])
 dd
 
 # cell 2

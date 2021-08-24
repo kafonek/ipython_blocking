@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='ipython_blocking',
-      version='0.2.1',
+      version='0.3.0',
       
       author='Matt Kafonek',
       author_email='kafonek@gmail.com',
@@ -12,7 +12,7 @@ setup(name='ipython_blocking',
       long_description_content_type = 'text/markdown',
       
       packages=find_packages(),
-      install_requires=['IPython', 'ipywidgets'],
+      install_requires=['IPython', 'ipywidgets', 'ipykernel>=6', 'nbclient', 'tornado'],
       
       classifiers = ['Framework :: IPython',
                      'Programming Language :: Python',
@@ -20,4 +20,3 @@ setup(name='ipython_blocking',
                      'Development Status :: 3 - Alpha',
                      ],
       license='BSD')
-      
