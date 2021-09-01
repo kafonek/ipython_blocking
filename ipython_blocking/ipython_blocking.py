@@ -1,7 +1,12 @@
 import sys
 
+import ipykernel
 import tornado.queues
 from nbclient.util import just_run
+
+# If ipykernel is 6+, use just_run to execute async kernel.* methods
+# otherwise use traditional sync kernel.* methods
+MAJ_VERSION = int(ipykernel.__version__.split(".")[0])
 
 ### General context manager usage:
 
@@ -23,10 +28,13 @@ class CaptureExecution:
         self.kernel = self.shell.kernel
 
     def step(self):
-        try:
-            just_run(self.kernel.do_one_iteration())
-        except tornado.queues.QueueEmpty:
-            pass
+        if MAJ_VERSION >= 6:
+            try:
+                just_run(self.kernel.do_one_iteration())
+            except tornado.queues.QueueEmpty:
+                pass
+        else:
+            self.kernel.do_one_iteration()
 
     def capture_event(self, stream, ident, parent):
         "A 'capture' function to register instead of the default execute_request handling"
@@ -49,7 +57,10 @@ class CaptureExecution:
             # Using kernel.set_parent is the key to getting the output of the replayed events
             # to show up in the cells that were captured instead of the current cell
             self.kernel.set_parent(ident, parent)
-            just_run(self.kernel.execute_request(stream, ident, parent))
+            if MAJ_VERSION >= 6:
+                just_run(self.kernel.execute_request(stream, ident, parent))
+            else:
+                self.kernel.execute_request(stream, ident, parent)
 
     def __enter__(self):
         self.start_capturing()
