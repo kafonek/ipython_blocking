@@ -1,7 +1,7 @@
 from .ipython_blocking import CaptureExecution
 from .ipython_magic import CaptureMagic, load_ipython_extensions
 
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 
 try:
     # This won't load when get_ipython() isn't defined, e.g. in default python shell.
