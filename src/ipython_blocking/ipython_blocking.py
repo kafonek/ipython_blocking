@@ -1,12 +1,8 @@
 import sys
 
-import ipykernel
-import tornado.queues
-from nbclient.util import just_run
-
-# If ipykernel is 6+, use just_run to execute async kernel.* methods
-# otherwise use traditional sync kernel.* methods
-MAJ_VERSION = int(ipykernel.__version__.split(".")[0])
+from ipykernel.ipkernel import IPythonKernel
+from ipykernel.zmqshell import ZMQInteractiveShell
+from jupyter_client.utils import run_sync
 
 ### General context manager usage:
 
@@ -24,17 +20,13 @@ class CaptureExecution:
     def __init__(self, replay=True):
         self.captured_events = []
         self._replay = replay
-        self.shell = get_ipython()
-        self.kernel = self.shell.kernel
+        # get_ipython() available in any ipykernel process
+        self.shell: ZMQInteractiveShell = get_ipython()
+        self.kernel: IPythonKernel = self.shell.kernel
 
-    def step(self):
-        if MAJ_VERSION >= 6:
-            try:
-                just_run(self.kernel.do_one_iteration())
-            except tornado.queues.QueueEmpty:
-                pass
-        else:
-            self.kernel.do_one_iteration()
+    @run_sync
+    async def step(self):
+        await self.kernel.do_one_iteration()
 
     def capture_event(self, stream, ident, parent):
         "A 'capture' function to register instead of the default execute_request handling"
@@ -48,7 +40,8 @@ class CaptureExecution:
         "revert the kernel shell handler to the default execute_request behavior"
         self.kernel.shell_handlers["execute_request"] = self.kernel.execute_request
 
-    def replay_captured_events(self):
+    @run_sync
+    async def replay_captured_events(self):
         "Called at end of context -- replays all captured events once the default execution handler is in place"
         # need to flush before replaying so messages show up in current cell not replay cells
         sys.stdout.flush()
@@ -57,10 +50,7 @@ class CaptureExecution:
             # Using kernel.set_parent is the key to getting the output of the replayed events
             # to show up in the cells that were captured instead of the current cell
             self.kernel.set_parent(ident, parent)
-            if MAJ_VERSION >= 6:
-                just_run(self.kernel.execute_request(stream, ident, parent))
-            else:
-                self.kernel.execute_request(stream, ident, parent)
+            await self.kernel.execute_request(stream, ident, parent)
 
     def __enter__(self):
         self.start_capturing()
