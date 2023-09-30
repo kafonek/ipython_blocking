@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "ipython-blocking"
+version = "0.4.0"
+description = "Context manager for blocking cell execution within a Jupyter notebook"
+authors = ["Matt Kafonek <kafonek@gmail.com>"]
+readme = "README.md"
+license = "BSD-3-Clause"
+packages = [{include = "ipython_blocking", from = "src"}]
+repository = "https://github.com/kafonek/ipython_blocking"
+
+[tool.poetry.dependencies]
+python = ">=3.9"
+ipython = "*"
+ipywidgets = "*"
+nbclient = ">=0.7.1"
+ipykernel = ">=6.0"
+
+
+[tool.poetry.group.dev.dependencies]
+isort = "^5.12.0"
+black = "^23.9.1"
+jupyter = "^1.0.0"
+notebook = "^7.0.4"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
