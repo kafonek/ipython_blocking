@@ -2,7 +2,38 @@ import sys
 
 import ipykernel
 import tornado.queues
-from nbclient.util import just_run
+try:
+    from nbclient.util import just_run
+except ImportError:
+    # just_run was removed in newer nbclient versions
+    import asyncio
+    def just_run(coro):
+        """Replacement for missing just_run function"""
+        try:
+            loop = asyncio.get_running_loop()
+            if loop.is_running():
+                try:
+                    import nest_asyncio
+                    nest_asyncio.apply()
+                    return loop.run_until_complete(coro)
+                except ImportError:
+                    # Fallback to thread execution
+                    import concurrent.futures
+                    def run_in_thread():
+                        new_loop = asyncio.new_event_loop()
+                        asyncio.set_event_loop(new_loop)
+                        try:
+                            return new_loop.run_until_complete(coro)
+                        finally:
+                            new_loop.close()
+                    
+                    with concurrent.futures.ThreadPoolExecutor() as executor:
+                        future = executor.submit(run_in_thread)
+                        return future.result()
+            else:
+                return loop.run_until_complete(coro)
+        except RuntimeError:
+            return asyncio.run(coro)
 
 # If ipykernel is 6+, use just_run to execute async kernel.* methods
 # otherwise use traditional sync kernel.* methods
